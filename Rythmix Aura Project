@@ -1,0 +1,141 @@
+#include <EEPROM.h>
+const int switchPin1 = 2;  // The pin where the switch is connected
+#define switchPin2 3
+const int ledPin1 = 8;     // The pin where the LED is connected
+const int ledPin2 = 9; 
+unsigned long currentTime;
+unsigned long previousTimeLed = 0;
+unsigned long previousTimeHour = 0;
+
+bool ledOn = false;
+bool switchState = false;
+bool lastSwitchState = false;
+const int buttonUpPin = 4;
+const int buttonDownPin = 5;
+int brightnessLevel = 0;
+int buttonUpState = HIGH;
+int buttonDownState = HIGH;
+int lastButtonUpState = HIGH;
+int lastButtonDownState = HIGH;
+int brightnessValue;
+void setup() {
+  pinMode(switchPin1, INPUT_PULLUP); // The switch is connected to ground when closed
+  pinMode(switchPin2, INPUT_PULLUP);
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+  pinMode(buttonUpPin, INPUT_PULLUP);
+  pinMode(buttonDownPin, INPUT_PULLUP);
+  analogWrite(ledPin2, 0);
+  brightnessLevel = EEPROM.read(0);
+  if (brightnessLevel > 3 || brightnessLevel < 0) {
+    // If the stored value is invalid, reset to the default (0)
+    brightnessLevel = 0;
+  }
+  updateLedBrightness();
+  // Start serial communication with the computer
+  Serial.begin(9600);
+  // Print an initial message to the Serial Monitor
+  Serial.println("Press the button to start the cycles.");
+}
+
+void loop() {
+  {
+    buttonUpState = digitalRead(buttonUpPin);
+  if (buttonUpState != lastButtonUpState) {
+    if (buttonUpState == LOW) {
+      brightnessLevel++;
+      if (brightnessLevel > 3) {
+        brightnessLevel = 3;
+      }
+      updateLedBrightness();
+      // Save the current brightness level to EEPROM
+      EEPROM.update(0, brightnessLevel);
+    }
+    delay(50);
+  }
+  lastButtonUpState = buttonUpState;
+
+  buttonDownState = digitalRead(buttonDownPin);
+  if (buttonDownState != lastButtonDownState) {
+    if (buttonDownState == LOW) {
+      brightnessLevel--;
+      if (brightnessLevel < 0) {
+        brightnessLevel = 0;
+      }
+      updateLedBrightness();
+      // Save the current brightness level to EEPROM
+      EEPROM.update(0, brightnessLevel);
+    }
+    delay(50);
+  }
+  lastButtonDownState = buttonDownState;
+  }
+  
+  {
+  int a = digitalRead(switchPin2);
+  if(a == LOW){ // Since we are using INPUT_PULLUP, LOW means the switch is pressed
+    digitalWrite(ledPin1, HIGH);
+    analogWrite(ledPin2,brightnessValue);
+    Serial.println("ON STATE");
+  }
+  if((a == HIGH)&&(switchState == HIGH)){
+    digitalWrite(ledPin1, LOW);
+   analogWrite(ledPin2,0);
+    Serial.println("OFF STATE");
+  }
+}
+  // Read the state of the switch
+  switchState = digitalRead(switchPin1);
+
+  // Check if the switch state has changed
+  if (switchState != lastSwitchState) {
+    // If the switch is opened, stop the cycles
+    if (switchState == HIGH) {
+      ledOn = false;
+      digitalWrite(ledPin1, LOW);
+      analogWrite(ledPin2, 0);
+      Serial.println("Button opened - Cycles stopped.");
+    }
+    // If the switch is closed, start the cycles
+    else {
+      ledOn = true;
+      previousTimeLed = millis(); // Store the current time for the LED cycle
+      digitalWrite(ledPin1, HIGH);
+      analogWrite(ledPin2,brightnessValue);
+      Serial.println("Button closed - Cycles started.");
+      Serial.println("LED turned on.");
+    }
+    lastSwitchState = switchState;
+  }
+
+  // Check if the LED cycle is active
+  if (ledOn) {
+    currentTime = millis();
+    // If one minute has passed since the LED was turned on, turn it off
+    if (currentTime - previousTimeLed >= 10000) {
+      digitalWrite(ledPin1, LOW);
+      analogWrite(ledPin2, 0);
+      ledOn = false;
+      previousTimeHour = currentTime; // Update the one-hour cycle timer when LED is turned off
+      Serial.println("LED turned off.");
+    }
+  }
+
+  // Check if one hour has passed since the last LED cycle
+  currentTime = millis();
+  if (!ledOn && currentTime - previousTimeHour >= 20000) {
+    // If it's time for a new cycle, reset the timer for the 1-hour cycle
+    previousTimeHour = currentTime;
+    if (!switchState) {
+      ledOn = true;
+      previousTimeLed = currentTime;
+      digitalWrite(ledPin1, HIGH);
+      analogWrite(ledPin2,brightnessValue);
+      Serial.println("LED turned on.");
+    }
+  }
+}
+void updateLedBrightness() {
+   brightnessValue = map(brightnessLevel, 0, 3, 0, 255);
+  //analogWrite(ledPin, brightnessValue);
+}
