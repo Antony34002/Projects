@@ -1,0 +1,130 @@
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+const int buttonPin1 = 2; 
+const int buttonPin2 = 3; 
+const int servoChannel1 = 0;
+const int servoChannel2 = 1;
+const int servoChannel3 = 2;
+const int servoChannel4 = 3;
+const int servoChannel5 = 4;
+const int servoChannel6 = 5;
+const int servoChannel7 = 6;
+const int servoChannel8 = 7;
+const int servoChannel9 = 8;
+const int servoChannel10 = 9;
+int servoPosition1 = 90; 
+int servoPosition2 = 90; 
+int servoPosition3 = 90;
+int servoPosition4 = 90;
+int servoPosition5 = 90;
+int servoPosition6 = 90; 
+int servoPosition7 = 90; 
+int servoPosition8 = 90; 
+int servoPosition9 = 90; 
+int servoPosition10 = 90; 
+
+int servoStep = 1; 
+bool movingForward = true;
+
+void setup() {
+  pwm.begin();
+  pwm.setPWMFreq(60); 
+  
+  pinMode(buttonPin1, INPUT_PULLUP);
+  pinMode(buttonPin2, INPUT_PULLUP);
+}
+
+void loop() {
+  // Check the first push button
+  if (digitalRead(buttonPin1) == LOW) {
+    // Button 1 is pressed, move both servos forward
+    movingForward = true;
+  }
+
+  // Check the second push button
+  if (digitalRead(buttonPin2) == LOW) {
+    // Button 2 is pressed, move both servos in reverse
+    movingForward = false;
+  }
+
+  // Update the servo positions
+  if (movingForward) {
+    if (servoPosition1 < 180) {
+      servoPosition1 += servoStep;
+    }
+    if (servoPosition2 < 180) {
+      servoPosition2 += servoStep;
+    }
+    if (servoPosition3 < 180) {
+      servoPosition3 += servoStep;
+    }
+    if (servoPosition4 < 180) {
+      servoPosition4 += servoStep;
+    }
+    if (servoPosition5 < 180) {
+      servoPosition5 += servoStep;
+    }
+    if (servoPosition6 < 180) {
+      servoPosition6 += servoStep;
+    }
+    if (servoPosition7 < 180) {
+      servoPosition7 += servoStep;
+    }
+    if (servoPosition8 < 180) {
+      servoPosition8 += servoStep;
+    }
+    if (servoPosition9 < 180) {
+      servoPosition9 += servoStep;
+    }
+    if (servoPosition10 < 180) {
+      servoPosition10 += servoStep;
+    }
+  } else {
+    if (servoPosition1 > 0) {
+      servoPosition1 -= servoStep;
+    }
+    if (servoPosition2 > 0) {
+      servoPosition2 -= servoStep;
+    }
+    if (servoPosition3 > 0) {
+      servoPosition3 -= servoStep;
+    }
+    if (servoPosition4 > 0) {
+      servoPosition4 -= servoStep;
+    }
+    if (servoPosition5 > 0) {
+      servoPosition5 -= servoStep;
+    }
+    if (servoPosition6 > 0) {
+      servoPosition6 -= servoStep;
+    }
+    if (servoPosition7 > 0) {
+      servoPosition7 -= servoStep;
+    }
+    if (servoPosition8 > 0) {
+      servoPosition8 -= servoStep;
+    }
+    if (servoPosition9 > 0) {
+      servoPosition9 -= servoStep;
+    }
+    if (servoPosition10 > 0) {
+      servoPosition10 -= servoStep;
+    }
+  }
+
+  // Set the servo positions
+  pwm.setPWM(servoChannel1, 0, map(servoPosition1, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel2, 0, map(servoPosition2, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel3, 0, map(servoPosition3, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel4, 0, map(servoPosition4, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel5, 0, map(servoPosition5, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel6, 0, map(servoPosition6, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel7, 0, map(servoPosition7, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel8, 0, map(servoPosition8, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel9, 0, map(servoPosition9, 0, 180, 120, 600));
+  pwm.setPWM(servoChannel10, 0, map(servoPosition10, 0, 180, 120, 600));
+  delay(15); // Add a small delay to control the servo speed
+}
